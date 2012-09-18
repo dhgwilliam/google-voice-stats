@@ -25,6 +25,11 @@ get '/people/:person' do
   haml :person
 end
 
+get '/month' do
+  @months = monthly
+  haml :month
+end
+
 get '/debug' do
   haml :debug
 end

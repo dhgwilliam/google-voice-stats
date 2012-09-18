@@ -1,7 +1,11 @@
 helpers do
-  def monthly(person)
+  def monthly(person = nil)
     messages = []
-    Message.find(:sent_by_id => person.id).union(:sent_to_id => person.id).each {|message| messages << message}
+    unless person.nil?
+      Message.find(:sent_by_id => person.id).union(:sent_to_id => person.id).each {|message| messages << message}
+    else
+      Message.all.each {|message| messages << message}
+    end
     messages.sort_by! {|message| message.date}
 
     data = {}
