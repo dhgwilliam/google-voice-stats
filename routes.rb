@@ -3,6 +3,11 @@ require 'time'
 require 'ohm'
 
 get '/people' do
+  @people = []
+  Person.all.each do |person|
+    @people << person
+  end
+  @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :people
 end
 
@@ -19,11 +24,6 @@ get '/people/:person' do
   @messages.sort_by! {|message| message.date}
   haml :person
 end
-
-# get '/load/:person' do
-#   parse(params[:person])
-#   redirect url("/people")
-# end
 
 get '/debug' do
   haml :debug

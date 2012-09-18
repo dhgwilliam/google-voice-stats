@@ -2,8 +2,8 @@
   %title
   %body
     %h1 People
-    - Person.all.sort(:by => :name).each do |person|
+    - @people.each do |person|
       - unless person.name == "Me"
-        = Message.find(:sent_by_id => person.id).count.to_s.ljust(4, " ")
+        = Message.find(:sent_by_id => person.id).union(:sent_to_id => person.id).count.to_s.ljust(4, " ")
         %a{:href=> "/people/#{person.id}"}= person.name
         %br
