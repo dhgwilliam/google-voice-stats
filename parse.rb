@@ -18,10 +18,17 @@ def parse(person = nil)
     s.each {|file|  if !file.include? ".mp3" and !File.directory?(File.join('.', 'data', file)) then files << file end }
   end
   s.close
-  files.each do |file|
+  puts "Total: #{files.count}"
+  files.each_with_index do |file, i|
+    putc "."
+    if (i + 1) % 20 == 0 then puts i+1 end
     o_file = File.open(File.join('.', 'data', file)).readlines.join
-    title = o_file.match(/\<title\>(.*?)<\/title\>/x)
-    puts title
+    begin
+      title = o_file.match(/\<title\>(.*?)<\/title\>/xm)[1].dump.gsub(/\\n/," ").gsub("Me to ", "").slice(1..-2)
+    rescue NoMethodError
+      title = "No name"
+    end
+    # puts "#{file} #{if title then title end }"
     doc = PandocRuby.new(o_file, :from => :html, :to => :markdown).convert
 
     lines = []
@@ -41,8 +48,6 @@ def parse(person = nil)
     rescue NoMethodError
     end
 
-    to_who = "No one"
-
     fixed.each do |message|
       h = {}
       date = message.match(/^[a-zA-Z]{3} .* Time/)
@@ -54,20 +59,13 @@ def parse(person = nil)
         h["from"] = who[0].slice(1..-2)
         unless Person.with(:name, h["from"]) then Person.create(:name => h["from"]) end
         h["content"] = content[0].slice(3..-1)
-        if h["from"] != "Me" then h["to"] = "Me"; to_who = h["from"] end
-        h["to"] ||= nil
-        unless h["to"] == nil or h["to"] == "No one"
-          unless Person.with(:name, h["to"]) then Person.create(:name => h["to"]) end
+        if h["from"] != "Me" then h["to"] = "Me" else h["to"] = title end
+        unless Person.with(:name, h["to"]) then Person.create(:name => h["to"]) end
+        prehash = "#{h["date"]}#{h["from"]}#{h["content"]}"
+        posthash = Digest::MD5.digest(prehash)
+        unless Message.with(:hash, posthash)
+          Message.create(:date => h["date"], :content => h["content"], :sent_by => Person.with(:name, h["from"]), :sent_to => Person.with(:name, h["to"]), :hash => posthash)
         end
-        $all_c << h
-      end
-    end
-    $all_c.each {|h| if h["to"].nil? || h["to"] == "No one" then h["to"] = to_who end }
-    $all_c.uniq.each do |m|
-      prehash = "#{m["date"]}#{m["from"]}#{m["content"]}"
-      posthash = Digest::MD5.digest(prehash)
-      unless Message.with(:hash, posthash)
-        Message.create(:date => m["date"], :content => m["content"], :sent_by => Person.with(:name, m["from"]), :sent_to => Person.with(:name, m["to"]), :hash => posthash)
       end
     end
   end
