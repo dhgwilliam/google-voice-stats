@@ -1,12 +1,10 @@
-%html
-  %head
-  %body
-    %ul
-      %li
-        %a{:href => url('/month')} Messages by month
-      %li
-        %a{:href => url('/people')} Messages by person
-      %li
-        %a{:href => url('/people/2')}= "Messages with #{Person[2].name}"
-      %li
-        %a{:href => url('/people/2/details')}= "Details for #{Person[2].name}"
+%h1 Home
+%ul
+  %li
+    %a{:href => url('/month')} Messages by month
+  %li
+    %a{:href => url('/people')} Messages by person
+  %li
+    %a{:href => url('/people/2')}= "Messages with #{Person[2].name}"
+  %li
+    %a{:href => url('/people/2/details')}= "Details for #{Person[2].name}"
