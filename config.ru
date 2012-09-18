@@ -1,5 +1,10 @@
-require 'sinatra'
-require 'redis'
-require './lib/fix.rb'
+$:.unshift File.dirname(__FILE__)
+$LOAD_PATH << './lib'
+$LOAD_PATH << './models'
+require 'routes'
+require 'helpers'
 
+require 'person'
+
+Ohm.connect(:db => "15")
 run Sinatra::Application
