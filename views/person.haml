@@ -2,19 +2,23 @@
   %head
   %body
     %h1= "Conversation with #{Person[params[:person]].name}"
+    %h2
+      %a{:href => url("/people/#{params[:person]}/details")}= "Details"
     - @messages.each_with_index do |o, index|
       - if index > 0
         - last_time = DateTime.parse(@messages[index-1].date)
-        - if last_time.day != DateTime.parse(o.date).day
+        - if last_time.day != DateTime.parse(o.date).day and last_time.hour == DateTime.parse(o.date).hour
+          %h3= DateTime.parse(o.date).strftime("%b %d, %Y")
+          %b= DateTime.parse(o.date).strftime("%I:%M %P")
           %br
-          %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
+        - if last_time.day != DateTime.parse(o.date).day and last_time.hour != DateTime.parse(o.date).hour
+          %h3= DateTime.parse(o.date).strftime("%b %d, %Y")
         - if last_time.hour != DateTime.parse(o.date).hour
           %br
           %b= DateTime.parse(o.date).strftime("%I:%M %P")
           %br
       - else
-        %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
-        %br
+        %h3= DateTime.parse(o.date).strftime("%b %d, %Y")
         %b= DateTime.parse(o.date).strftime("%I:%M %P")
         %br
       %b= o.sent_by.name + ": "
