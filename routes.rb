@@ -2,6 +2,10 @@ require 'sinatra'
 require 'time'
 require 'ohm'
 
+get '/' do
+  haml :index
+end
+
 get '/people' do
   @people = []
   Person.all.each do |person|
