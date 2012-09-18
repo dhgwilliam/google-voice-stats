@@ -7,16 +7,16 @@
         - last_time = DateTime.parse(@messages[index-1].date)
         - if last_time.day != DateTime.parse(o.date).day
           %br
-          %br
           %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
         - if last_time.hour != DateTime.parse(o.date).hour
           %br
-          %br
           %b= DateTime.parse(o.date).strftime("%I:%M %P")
+          %br
       - else
         %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
         %br
         %b= DateTime.parse(o.date).strftime("%I:%M %P")
-      %br
+        %br
       %b= o.sent_by.name + ": "
       = o.content.gsub(/\\\$/,"$")
+      %br
