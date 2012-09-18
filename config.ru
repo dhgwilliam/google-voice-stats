@@ -1,5 +1,4 @@
 $:.unshift File.dirname(__FILE__)
-$LOAD_PATH << './lib'
 $LOAD_PATH << './models'
 require 'routes'
 require 'helpers'
