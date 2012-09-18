@@ -1,5 +1,5 @@
 helpers do
-  def slice(person)
+  def monthly(person)
     messages = []
     Message.find(:sent_by_id => person.id).union(:sent_to_id => person.id).each {|message| messages << message}
     messages.sort_by! {|message| message.date}

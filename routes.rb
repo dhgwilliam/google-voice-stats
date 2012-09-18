@@ -7,7 +7,7 @@ get '/people' do
 end
 
 get '/people/:person/details' do
-  @slice = slice(Person[params[:person]])
+  @slice = monthly(Person[params[:person]])
   haml :details
 end
 
