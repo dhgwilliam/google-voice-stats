@@ -2,5 +2,5 @@
 - @people.each do |person|
   - unless person.name == "Me"
     = Message.find(:sent_by_id => person.id).union(:sent_to_id => person.id).count.to_s.ljust(4, " ")
-    %a{:href=> "/people/#{person.id}"}= person.name
+    %a{:href=> "/person/#{person.id}"}= person.name
     %br

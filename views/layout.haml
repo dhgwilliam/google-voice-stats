@@ -13,17 +13,21 @@
             %span{:class => "icon-bar"}
             %span{:class => "icon-bar"}
             %span{:class => "icon-bar"}
+            %span{:class => "icon-bar"}
           %a{:class => "brand", :href => url('/')} Google Voice Stats
           .nav-collapse.collapse
             %ul.nav
               %li
                 %a{:href => url('/people')} People
               %li
-                %a{:href => url('/month')} Monthly
+                %a{:href => url('/monthly')} Monthly
+              %li
+                %a{:href => url('/weekly')} Weekly
               %li
                 %a{:href => url('/debug')} Debug
     .container
-      = yield
+      .span6
+        = yield
     %script{:src => url('/js/jquery.js')}
     %script{:src => url('/js/bootstrap.js')}
     %script{:src => url('/js/bootstrap-transition.js')}

@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'time'
 require 'ohm'
+require 'gchart'
 
 get '/' do
   haml :index
@@ -15,12 +16,7 @@ get '/people' do
   haml :people
 end
 
-get '/people/:person/details' do
-  @slice = monthly(Person[params[:person]])
-  haml :details
-end
-
-get '/people/:person' do
+get '/person/:person' do
   @messages = []
   Message.find(:sent_by_id => params[:person]).union(:sent_to_id => params[:person]).each do |message|
     @messages << message
@@ -29,8 +25,35 @@ get '/people/:person' do
   haml :person
 end
 
-get '/month' do
-  @months = monthly
+get '/monthly' do
+  @segments = person_by(nil, "month")
+  @time_period = @segments[1]
+  @segments = @segments[0]
+  @gchart = Gchart.line(:data => @segments.values, :size => "460x200", :axis_with_labels => 'y')
+  haml :month
+end
+
+get '/monthly/:person' do
+  @segments = person_by(Person[params[:person]], "month")
+  @time_period = @segments[1]
+  @segments = @segments[0]
+  @gchart = Gchart.line(:data => @segments.values, :size => "460x200", :axis_with_labels => 'y')
+  haml :month
+end
+
+get '/weekly' do
+  @segments = person_by(nil, "week")
+  @time_period = @segments[1]
+  @segments = @segments[0]
+  @gchart = Gchart.line(:data => @segments.values, :size => "460x200", :axis_with_labels => 'y')
+  haml :month
+end
+
+get '/weekly/:person' do
+  @segments = person_by(Person[params[:person]], "week")
+  @time_period = @segments[1]
+  @segments = @segments[0]
+  @gchart = Gchart.line(:data => @segments.values, :size => "460x200", :axis_with_labels => 'y')
   haml :month
 end
 

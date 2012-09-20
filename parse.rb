@@ -24,7 +24,7 @@ def parse(person = nil)
     if (i + 1) % 20 == 0 then puts i+1 end
     o_file = File.open(File.join('.', 'data', file)).readlines.join
     begin
-      title = o_file.match(/\<title\>(.*?)<\/title\>/xm)[1].dump.gsub(/\\n/," ").gsub("Me to ", "").slice(1..-2)
+      title = o_file.match(/\<title\>(.*?)<\/title\>/xm)[1].dump.gsub(/\\n/," ").gsub("Me to ", "").slice(1..-2).gsub("&quot;", "").gsub("'", "").gsub('"', "")
     rescue NoMethodError
       title = "No name"
     end
@@ -56,7 +56,7 @@ def parse(person = nil)
 
       if date && who && content then
         h["date"] = DateTime.parse(date[0])
-        h["from"] = who[0].slice(1..-2)
+        h["from"] = who[0].slice(1..-2).gsub("&quot;", "").gsub("'", "").gsub('"', "")
         unless Person.with(:name, h["from"]) then Person.create(:name => h["from"]) end
         h["content"] = content[0].slice(3..-1)
         if h["from"] != "Me" then h["to"] = "Me" else h["to"] = title end

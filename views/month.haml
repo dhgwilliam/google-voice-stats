@@ -1,3 +1,10 @@
-- @months.each do |k,v|
-  = "{month: #{k}, messages: #{v.to_s.rjust(4, "0")}}"
+- unless @gchart.nil?
+  %img{:src => @gchart}
+  %br
+%br
+- @segments.each_with_index do |kv, index|
+  - unless index == (@segments.count - 1)
+    = "{#{@time_period}: #{kv[0]}, messages: #{kv[1].to_s.rjust(4, "0")}},"
+  - else
+    = "{#{@time_period}: #{kv[0]}, messages: #{kv[1].to_s.rjust(4, "0")}}"
   %br
