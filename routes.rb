@@ -57,6 +57,52 @@ get '/weekly/:person' do
   haml :month
 end
 
-get '/debug' do
-  haml :debug
+get '/dictionary/init' do
+  build_dic
+  redirect url("/dictionary/all")
+end
+
+get '/dictionary/nuke' do
+  Ohm.redis.zremrangebyscore("dic_all", 0, -1)
+  redirect url("/")
+end
+
+get '/dictionary/all' do
+  @dictionary = Ohm.redis.zrevrange("dic_all", 0, 99, :withscores => true)
+  haml :dictionary
+end
+
+get '/dictionary/refreshall' do
+  Person.all.each {|person| unless person.id == "1" then build_dic(person.id) end}
+  redirect("/people")
+end
+
+get '/dictionary/:person_id/refresh' do
+  build_dic(params[:person_id])
+  redirect url("/dictionary/#{params[:person_id]}")
+end
+
+get '/dictionary/:person_id' do
+  @dictionary = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1, :withscores => true)
+  haml :dictionary
+end
+
+get '/dictionary/:person_id/sips' do
+  if Ohm.redis.zcard("ll_#{params[:person_id]}") == 0
+    list = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1)
+    list.each do |word|
+      ll = log_likelihood(word, params[:person_id])
+      Ohm.redis.zadd("ll_#{params[:person_id]}", ll, word)
+    end
+  end
+  @dictionary = Ohm.redis.zrevrange("ll_#{params[:person_id]}", 0, -1, :withscores => true)
+  haml :dictionary
+end
+
+get '/keyword/:keyword' do
+  @messages = []
+  Message.all.each do |message|
+    if message.content.downcase.include? params[:keyword].downcase then @messages << message end
+  end
+  haml :keyword
 end

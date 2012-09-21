@@ -42,5 +42,38 @@ helpers do
     end
     [data, time_period]
   end
-end
 
+  def build_dic(person_id = nil, time_period = nil)
+    unless person_id.nil? then dictionary = "dic_#{person_id}" else dictionary = "dic_all" end
+    unless person_id.nil? then Ohm.redis.zremrangebyrank(dictionary, 0, -1)  end
+    messages = {}
+    unless person_id.nil?
+      Message.find(:sent_by_id => person_id).union(:sent_to_id => person_id).each {|message| messages[message.date] = message.content}
+    else
+      Message.all.each {|message| messages[message.date] = message.content}
+    end
+    if time_period
+      messages.reject! {|date,content| DateTime.parse(date) < time_period[0] or DateTime.parse(date) > time_period[1] }
+    end
+    messages.values.each do |message|
+      message.split(/\s/).each do |word| 
+        word = word.downcase.gsub(/\W/, "")
+        unless word == ""
+          if Ohm.redis.zscore(dictionary, word)
+            Ohm.redis.zincrby(dictionary, "1", word)
+          else
+            Ohm.redis.zadd(dictionary, "1", word)
+          end
+        end
+      end
+    end
+  end
+
+  def log_likelihood(word, person_id)
+    @sample = "dic_#{person_id}"
+    a, b, c, d = Ohm.redis.zscore("dic_all", word), Ohm.redis.zscore(@sample, word), 0, 0
+    Ohm.redis.zrevrange("dic_all", 0, -1, :withscores => true).each {|pair| c = c + pair.last}
+    Ohm.redis.zrevrange(@sample, 0, -1, :withscores => true).each {|pair| d = d + pair.last}
+    ll = 2 * ((a*Math.log(a/((c*(a+b))/(c+d))))+(b*Math.log(b/(d*(a+b)/(c+d)))))
+  end
+end

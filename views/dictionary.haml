@@ -1,0 +1,5 @@
+- @dictionary.sort_by! {|pair| -pair[1]}
+- @dictionary.each do |pair|
+  = pair[1].truncate
+  %b= pair[0]
+  %br

@@ -1,0 +1,8 @@
+- @messages.sort_by! {|x| DateTime.parse(x.date)}
+- @messages.each do |message|
+  = DateTime.parse(message.date).strftime("%Y-%m-%d")
+  = "From: #{message.sent_by.name} To: #{message.sent_to.name}"
+  %br
+  = message.content
+  %br
+  %br
