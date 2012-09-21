@@ -11,6 +11,8 @@ GEM
       scrivener (~> 0.0.3)
     pandoc-ruby (0.5.0)
     rack (1.4.1)
+    rack-cache (1.2)
+      rack (>= 0.4)
     rack-protection (1.2.0)
       rack
     redis (3.0.1)
@@ -31,5 +33,6 @@ DEPENDENCIES
   haml
   ohm
   pandoc-ruby
+  rack-cache
   shotgun
   sinatra
