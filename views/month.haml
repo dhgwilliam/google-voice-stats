@@ -1,10 +1,4 @@
-- unless @gchart.nil?
-  %img{:src => @gchart}
-  %br
-%br
+%h2= "By #{@time_period}"
 - @segments.each_with_index do |kv, index|
-  - unless index == (@segments.count - 1)
-    = "{#{@time_period}: #{kv[0]}, messages: #{kv[1].to_s.rjust(4, "0")}},"
-  - else
-    = "{#{@time_period}: #{kv[0]}, messages: #{kv[1].to_s.rjust(4, "0")}}"
+  = "Week of #{kv[0]}: #{kv[1]}"
   %br

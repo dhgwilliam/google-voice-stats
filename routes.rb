@@ -4,6 +4,11 @@ require 'ohm'
 require 'gchart'
 
 get '/' do
+  @people = []
+  Person.all.each do |person|
+    @people << person
+  end
+  @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :index
 end
 
@@ -14,7 +19,7 @@ get '/people' do
     @people << person
   end
   @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
-  haml :people
+  haml :people, :layout => false
 end
 
 get '/person/:person' do
@@ -24,6 +29,12 @@ get '/person/:person' do
     @messages << message
   end
   @messages.sort_by! {|message| message.date}
+
+  @segments = person_by(Person[params[:person]], "week")
+  @time_period = @segments[1]
+  @segments = @segments[0]
+  @gchart = Gchart.line(:data => @segments.values, :size => "460x200", :axis_with_labels => 'y')
+
   haml :person
 end
 

@@ -1,28 +1,32 @@
-%h1= "Conversation with #{Person[params[:person]].name}"
-%b
-  %a{:href => url("/monthly/#{params[:person]}")}= "Monthly"
-  |
-  %a{:href => url("/weekly/#{params[:person]}")}= "Weekly"
-- @messages.each_with_index do |o, index|
-  - if index > 0
-    - last_time = DateTime.parse(@messages[index-1].date)
-    - if last_time.day != DateTime.parse(o.date).day and last_time.hour == DateTime.parse(o.date).hour
-      %br
-      %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
-      %b= DateTime.parse(o.date).strftime("%I:%M %P")
-      %br
-    - if last_time.day != DateTime.parse(o.date).day and last_time.hour != DateTime.parse(o.date).hour
-      %br
-      %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
-    - if last_time.hour != DateTime.parse(o.date).hour
-      %br
-      %b= DateTime.parse(o.date).strftime("%I:%M %P")
-      %br
-  - else
-    %br
-    %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
-    %b= DateTime.parse(o.date).strftime("%I:%M %P")
-    %br
-  %b= o.sent_by.name + ": "
-  = o.content.gsub(/\\\$/,"$")
+#content.span6
+  %h1= Person[params[:person]].name
   %br
+  - unless @gchart.nil?
+    %img{:src => @gchart}
+    %br
+  - @messages.each_with_index do |o, index|
+    - if index > 0
+      - last_time = DateTime.parse(@messages[index-1].date)
+      - if last_time.day != DateTime.parse(o.date).day and last_time.hour == DateTime.parse(o.date).hour
+        %br
+        %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
+        %b= DateTime.parse(o.date).strftime("%I:%M %P")
+        %br
+      - if last_time.day != DateTime.parse(o.date).day and last_time.hour != DateTime.parse(o.date).hour
+        %br
+        %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
+      - if last_time.hour != DateTime.parse(o.date).hour
+        %br
+        %b= DateTime.parse(o.date).strftime("%I:%M %P")
+        %br
+    - else
+      %br
+      %h2= DateTime.parse(o.date).strftime("%b %d, %Y")
+      %b= DateTime.parse(o.date).strftime("%I:%M %P")
+      %br
+    %b= o.sent_by.name + ": "
+    = o.content.gsub(/\\\$/,"$")
+    %br
+
+#rightside.span2
+  &nbsp;

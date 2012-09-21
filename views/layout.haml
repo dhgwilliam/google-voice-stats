@@ -26,8 +26,11 @@
               %li
                 %a{:href => url('/debug')} Debug
     .container
-      .span6
-        = yield
+      #sidebar.span2
+        &nbsp;
+      .span8
+        .row
+          = yield
     %script{:src => url('/js/jquery.js')}
     %script{:src => url('/js/bootstrap.js')}
     %script{:src => url('/js/bootstrap-transition.js')}
@@ -42,3 +45,6 @@
     %script{:src => url('/js/bootstrap-collapse.js')}
     %script{:src => url('/js/bootstrap-carousel.js')}
     %script{:src => url('/js/bootstrap-typeahead.js')}
+    :javascript
+      $('#sidebar').load('/people');
+      //$('#rightside').load('/weekly/#{params[:person]}');
