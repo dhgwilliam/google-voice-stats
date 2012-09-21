@@ -14,14 +14,12 @@ helpers do
     elsif time_period == "week"
       increment, limit = "%U", 52
     end
-    puts limit
     earliest = [ DateTime.parse(messages.first.date).strftime("%Y").to_i, DateTime.parse(messages.first.date).strftime(increment).to_i ]
     counter = earliest
     latest = [ DateTime.now.strftime("%Y").to_i, DateTime.now.strftime(increment).to_i ]
     
     until counter[0] == latest[0] and counter[1] == latest[1]
       data["#{counter[0]}-#{counter[1].to_s.rjust(2, "0")}"] = 0
-      puts data
       if counter[1] < limit and counter[0] < latest[0]
         counter[1] += 1
       elsif counter[1] == limit and counter[0] < latest[0]
