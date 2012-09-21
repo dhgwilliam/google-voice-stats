@@ -1,4 +1,0 @@
-%h1= "Messages with #{Person[params[:person]].name} by month"
-- @slice.each do |k,v|
-  = "{month: #{k}, messages: #{v.to_s.rjust(4, "0")}}"
-  %br
