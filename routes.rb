@@ -13,7 +13,7 @@ get '/' do
 end
 
 get '/people' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  response['Cache-Control'] = "public, max-age=" + (60).to_s
   @people = []
   Person.all.each do |person|
     @people << person
@@ -107,14 +107,24 @@ get '/dictionary/:person_id' do
 end
 
 get '/dictionary/:person_id/sips' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   if Ohm.redis.zcard("ll_#{params[:person_id]}") == 0
+    Ohm.redis.zadd("ll_#{params[:person_id]}", 0, "i")
     list = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1)
     list.each do |word|
       Resque.enqueue(Sipper, word, params[:person_id])
     end
+    @sample = "dic_#{params[:person_id]}"
   end
-  @dictionary = Ohm.redis.zrevrange("ll_#{params[:person_id]}", 0, -1, :withscores => true)
+  @pre_dictionary = Ohm.redis.zrevrange("ll_#{params[:person_id]}", 0, -1, :withscores => true)
+  scores = []
+  @pre_dictionary.each {|pair| scores << pair[1]}
+  scores.sort!
+  median = scores[(scores.count/2).floor]
+  q2 = scores[3*(scores.count/4).floor]
+  q1 = scores[(scores.count/4).floor]
+  iqr = q2-q1
+  @dictionary = Ohm.redis.zrevrangebyscore("ll_#{params[:person_id]}", "+inf", iqr*3, :withscores => true)
   haml :dictionary
 end
 
@@ -122,6 +132,15 @@ get '/keyword/:keyword' do
   response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @messages = []
   Message.all.each do |message|
+    if message.content.downcase.include? params[:keyword].downcase then @messages << message end
+  end
+  haml :keyword
+end
+
+get '/keyword/:keyword/with/:person_id' do
+  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  @messages = []
+  Message.find(:sent_to_id => params[:person_id]).union(:sent_by_id => params[:person_id]).each do |message|
     if message.content.downcase.include? params[:keyword].downcase then @messages << message end
   end
   haml :keyword

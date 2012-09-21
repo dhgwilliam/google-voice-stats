@@ -1,5 +1,10 @@
+- if request.url.include? "sips"
+  - title = "Statistically Improbable Terms"
+- else
+  - title = "Dictionary"
+%h2= "#{title} for #{Person[params[:person_id]].name}"
 - @dictionary.sort_by! {|pair| -pair[1]}
 - @dictionary.each do |pair|
   = pair[1].truncate
-  %b= pair[0]
-  %br
+  %a{:href=> url("/keyword/#{pair[0]}/with/#{params[:person_id]}")}= pair[0]
+  //%br

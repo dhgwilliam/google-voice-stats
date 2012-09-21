@@ -26,8 +26,13 @@
               %li
                 %a{:href => url('/debug')} Debug
     .container
-      #sidebar.span2
-        &nbsp;
+      #sidebar.span3
+        %br
+        %br
+        %br
+        .span1.pull-right
+          .progress.progress-striped.active
+            .bar{:style => "width: 50%;"}
       .span8
         .row
           = yield
@@ -47,4 +52,5 @@
     %script{:src => url('/js/bootstrap-typeahead.js')}
     :javascript
       $('#sidebar').load('/people');
-      //$('#rightside').load('/weekly/#{params[:person]}');
+      //$.get('/dictionary/#{params[:person]}', function(data){ $('#rightside').replaceWith(data); });
+
