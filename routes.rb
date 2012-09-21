@@ -111,8 +111,7 @@ get '/dictionary/:person_id/sips' do
   if Ohm.redis.zcard("ll_#{params[:person_id]}") == 0
     list = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1)
     list.each do |word|
-      ll = log_likelihood(word, params[:person_id])
-      Ohm.redis.zadd("ll_#{params[:person_id]}", ll, word)
+      Resque.enqueue(Sipper, word, params[:person_id])
     end
   end
   @dictionary = Ohm.redis.zrevrange("ll_#{params[:person_id]}", 0, -1, :withscores => true)
