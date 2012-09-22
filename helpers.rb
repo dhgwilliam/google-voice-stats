@@ -69,4 +69,23 @@ helpers do
     end
   end
 
+  def sips_for(person_id, withscores = true)
+    @pre_dictionary = Ohm.redis.zrevrange("ll_#{person_id}", 0, -1, :withscores => true)
+    scores = []
+    @pre_dictionary.each {|pair| scores << pair[1]}
+    scores.sort!
+    median = scores[(scores.count/2).floor]
+    q2 = scores[3*(scores.count/4).floor]
+    q1 = scores[(scores.count/4).floor]
+    iqr = q2-q1
+    Ohm.redis.zrevrangebyscore("ll_#{person_id}", "+inf", median + iqr*3, :withscores => withscores)
+  end
+
+  def messages_that_include(person_id, word)
+    @messages = []
+    Message.find(:sent_to_id => person_id).union(:sent_by_id => person_id).each do |message|
+      if message.content.downcase.include? params[:keyword].downcase then @messages << message end
+    end
+    return @messages
+  end
 end

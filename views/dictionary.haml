@@ -2,7 +2,8 @@
   - title = "Statistically Improbable Terms"
 - else
   - title = "Dictionary"
-%h2= "#{title} for #{Person[params[:person_id]].name}"
+- if params[:person_id]
+  %h2= "#{title} for #{Person[params[:person_id]].name}"
 - @dictionary.sort_by! {|pair| -pair[1]}
 - @dictionary.each do |pair|
   = pair[1].truncate

@@ -92,7 +92,22 @@ end
 
 get '/dictionary/refreshall' do
   Person.all.each {|person| unless person.id == "1" then build_dic(person.id) end}
-  redirect("/people")
+  redirect("/")
+end
+
+get '/dictionary/refreshall/sips' do
+  Person.all.each do |person| 
+    unless person.id == "1" 
+      if Ohm.redis.zcard("ll_#{person.id}") == 0
+        Ohm.redis.zadd("ll_#{person.id}", 0, "i")
+        list = Ohm.redis.zrevrange("dic_#{person.id}", 0, -1)
+        list.each do |word|
+          Resque.enqueue(Sipper, word, person.id)
+        end
+      end
+    end
+  end
+  redirect("/")
 end
 
 get '/dictionary/:person_id/refresh' do
@@ -116,15 +131,7 @@ get '/dictionary/:person_id/sips' do
     end
     @sample = "dic_#{params[:person_id]}"
   end
-  @pre_dictionary = Ohm.redis.zrevrange("ll_#{params[:person_id]}", 0, -1, :withscores => true)
-  scores = []
-  @pre_dictionary.each {|pair| scores << pair[1]}
-  scores.sort!
-  median = scores[(scores.count/2).floor]
-  q2 = scores[3*(scores.count/4).floor]
-  q1 = scores[(scores.count/4).floor]
-  iqr = q2-q1
-  @dictionary = Ohm.redis.zrevrangebyscore("ll_#{params[:person_id]}", "+inf", iqr*3, :withscores => true)
+  @dictionary = sips_for(params[:person_id])
   haml :dictionary
 end
 
@@ -139,9 +146,40 @@ end
 
 get '/keyword/:keyword/with/:person_id' do
   response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
-  @messages = []
-  Message.find(:sent_to_id => params[:person_id]).union(:sent_by_id => params[:person_id]).each do |message|
-    if message.content.downcase.include? params[:keyword].downcase then @messages << message end
-  end
+  @messages = messages_that_include(params[:person_id], params[:keyword])
   haml :keyword
+end
+
+get '/sip' do
+  sip_corpus = {}
+  Person.all.each do |person|
+    unless person.id == "1"
+      @dictionary = sips_for(person.id, false)
+      @dictionary.each do |word|
+        if sip_corpus[word].nil?
+          sip_corpus[word] = 1
+        else
+          sip_corpus[word] = sip_corpus[word] + 1
+        end
+      end
+    end
+  end
+  @dictionary = []
+  sip_corpus.each {|word, score| @dictionary << [word, score] }
+  @dictionary.reject! {|pair| pair.last < 3}
+  @dictionary.inspect
+end
+
+get '/sip/:keyword' do
+  @people = []
+  Person.all.each do |person|
+    unless person.id == "1"
+      if sips_for(person.id).flatten.include? params[:keyword] then @people << person.id end
+    end
+  end
+  @people.each do |person_id|
+    frequency = messages_that_include(person_id, params[:keyword]).count
+    distance = 1/frequency.to_f
+    puts "#{Person[person_id].name} frequency: #{frequency} distance: #{distance}"
+  end
 end
