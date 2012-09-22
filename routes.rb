@@ -43,7 +43,7 @@ get '/monthly' do
   haml :month
 end
 
-get '/monthly/:person' do
+get '/:person/monthly' do
   response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(Person[params[:person]], "month")
   @time_period = @segments[1]
@@ -61,7 +61,7 @@ get '/weekly' do
   haml :month
 end
 
-get '/weekly/:person' do
+get '/:person/weekly' do
   response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(Person[params[:person]], "week")
   @time_period = @segments[1]

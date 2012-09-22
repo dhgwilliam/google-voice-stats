@@ -5,7 +5,7 @@
     %a{:href=> "/person/#{person.id}"}= person.name
     |
     - if Ohm.redis.zcard("ll_#{person.id}") > 0
-      %a{:href => url("/dictionary/#{person.id}/sips"), :class => "label label-success"} SIPs
+      %a{:href => url("/person/#{person.id}/sips"), :class => "label label-success"} SIPs
     - else
-      %a{:href => url("/dictionary/#{person.id}/sips"), :class => "label label-info"} init
+      %a{:href => url("/person/#{person.id}/sips"), :class => "label label-info"} init
     %br
