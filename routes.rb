@@ -5,9 +5,7 @@ require 'gchart'
 
 get '/' do
   @people = []
-  Person.all.each do |person|
-    @people << person
-  end
+  Person.all.each {|person| @people << person}
   @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :index
 end
@@ -15,9 +13,7 @@ end
 get '/people' do
   response['Cache-Control'] = "public, max-age=" + (60).to_s
   @people = []
-  Person.all.each do |person|
-    @people << person
-  end
+  Person.all.each {|person| @people << person}
   @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :people, :layout => false
 end
@@ -110,25 +106,23 @@ get '/dictionary/refreshall/sips' do
   redirect("/")
 end
 
-get '/dictionary/:person_id/refresh' do
+get '/person/:person_id/dictionary/refresh' do
   build_dic(params[:person_id])
-  redirect url("/dictionary/#{params[:person_id]}")
+  redirect url("/person/#{params[:person_id]}/dictionary")
 end
 
-get '/dictionary/:person_id' do
+get '/person/:person_id/dictionary' do
   response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @dictionary = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1, :withscores => true)
   haml :dictionary
 end
 
-get '/dictionary/:person_id/sips' do
-  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+get '/person/:person_id/sips' do
+  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   if Ohm.redis.zcard("ll_#{params[:person_id]}") == 0
     Ohm.redis.zadd("ll_#{params[:person_id]}", 0, "i")
     list = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1)
-    list.each do |word|
-      Resque.enqueue(Sipper, word, params[:person_id])
-    end
+    list.each { |word| Resque.enqueue(Sipper, word, params[:person_id]) }
     @sample = "dic_#{params[:person_id]}"
   end
   @dictionary = sips_for(params[:person_id])
