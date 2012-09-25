@@ -145,35 +145,27 @@ get '/keyword/:keyword/with/:person_id' do
 end
 
 get '/sip' do
-  sip_corpus = {}
-  Person.all.each do |person|
-    unless person.id == "1"
-      @dictionary = sips_for(person.id, false)
-      @dictionary.each do |word|
-        if sip_corpus[word].nil?
-          sip_corpus[word] = 1
-        else
-          sip_corpus[word] = sip_corpus[word] + 1
-        end
-      end
-    end
-  end
-  @dictionary = []
-  sip_corpus.each {|word, score| @dictionary << [word, score] }
+  @dictionary = get_sip_corpus
   @dictionary.reject! {|pair| pair.last < 3}
   @dictionary.inspect
 end
 
+get '/prime/sips' do
+  get_all_whosips
+  redirect url('/sip')
+end
+
 get '/sip/:keyword' do
-  @people = []
-  Person.all.each do |person|
-    unless person.id == "1"
-      if sips_for(person.id).flatten.include? params[:keyword] then @people << person.id end
-    end
-  end
-  @people.each do |person_id|
-    frequency = messages_that_include(person_id, params[:keyword]).count
+  @people = who_has_sip(params[:keyword], true)
+  @people.each do |person_frequency|
+    frequency = person_frequency.last
     distance = 1/frequency.to_f
-    puts "#{Person[person_id].name} frequency: #{frequency} distance: #{distance}"
+    puts "#{Person[person_frequency.first].name} frequency: #{frequency} distance: #{distance}"
   end
+  true
+end
+
+get '/graph' do
+  graph
+  haml :graph
 end

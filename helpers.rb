@@ -1,3 +1,5 @@
+require 'json'
+
 helpers do
   def person_by(person = nil, time_period = "month")
     messages = []
@@ -84,8 +86,80 @@ helpers do
   def messages_that_include(person_id, word)
     @messages = []
     Message.find(:sent_to_id => person_id).union(:sent_by_id => person_id).each do |message|
-      if message.content.downcase.include? params[:keyword].downcase then @messages << message end
+      if message.content.downcase.include? word.downcase then @messages << message end
     end
     return @messages
+  end
+
+  def generate_sip_corpus
+    sip_corpus = {}
+    Person.all.each do |person|
+      unless person.id == "1"
+        @dictionary = sips_for(person.id, false)
+        @dictionary.each do |word|
+          if sip_corpus[word].nil?
+            sip_corpus[word] = 1
+          else
+            sip_corpus[word] = sip_corpus[word] + 1
+          end
+        end
+      end
+    end
+    sip_corpus.each {|word, score| Ohm.redis.zadd("sip_corpus", score, word)}
+  end
+
+  def get_sip_corpus(withscores = true)
+    if Ohm.redis.zcard("sip_corpus") == 0 then generate_sip_corpus end
+    # puts Ohm.redis.zrevrange("sip_corpus", 0, -1, :withscores => withscores).inspect
+    Ohm.redis.zrevrange("sip_corpus", 0, -1, :withscores => withscores)
+  end
+
+  def who_has_sip(word, withscores = false)
+    if Ohm.redis.zcard("who_has_#{word}") == 0
+      Resque.enqueue(WhoSipper, word)
+    end
+    return Ohm.redis.zrevrange("who_has_#{word}", 0, -1, :withscores => withscores)
+  end
+
+  def get_all_whosips
+    sips = get_sip_corpus(false)
+    sips.each do |sip|
+      who_has_sip(sip)
+    end
+  end
+
+  def graph
+    sip_hash = {}
+    sips = get_sip_corpus
+    sips.each do |word|
+      sip_hash[word.join("+")] = who_has_sip(word.first)
+    end
+
+    nodes = []
+    links = []
+    people_a = []
+
+    sip_hash.each do |word, people|
+      frequency = word.split("+").last.to_i
+      word = word.split("+").first
+      if frequency > 1 and people.count > 2
+        nodes << word
+        people.each do |person|
+          if Person[person] then person = Person[person].name end
+          unless nodes.include? person 
+            nodes << person
+            people_a << person
+          end
+          links << { "source" => nodes.index(word), "target" => nodes.index(person) }
+        end
+      end
+    end
+
+    # puts people_a.inspect
+    nodes.collect! { |node| if people_a.include? node then group = 2 else group = 1 end; { "name" => node, "group" => group } }
+
+    json = JSON::generate({ "nodes" => nodes, "links" => links })
+    graph_json = File.new(File.join(File.dirname(__FILE__), 'public', 'data', 'graph.json'), 'w')
+    File.write(graph_json, json)
   end
 end

@@ -2,9 +2,18 @@
   %head
     %link{:href => url('/css/bootstrap.css'), :rel => "stylesheet"}
     %link{:href => url('/css/bootstrap-responsive.css'), :rel => "stylesheet"}
+    - if request.url.include? "graph"
+      %link{:href => url('/css/force.css'), :rel => "stylesheet"}
     %link{:rel=>"shortcut icon", :href =>url('/assets/ico/favicon.ico')}
     :css
       body { padding-top: 60px; }
+    - if request.url.include? "graph"
+      :css
+        .node text {
+          pointer-events: none;
+          font: 10px sans-serif;
+        }
+
   %body
     .navbar.navbar-inverse.navbar-fixed-top
       .navbar-inner
