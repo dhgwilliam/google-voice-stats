@@ -166,7 +166,7 @@ get '/sip/:keyword' do
 end
 
 get '/graph' do
-  graph
+  # graph
   haml :graph
 end
 

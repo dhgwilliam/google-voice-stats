@@ -71,7 +71,7 @@ helpers do
     end
   end
 
-  def sips_for(person_id, withscores = true)
+  def sips_for(person_id, withscores = true, word = nil)
     @pre_dictionary = Ohm.redis.zrevrange("ll_#{person_id}", 0, -1, :withscores => true)
     scores = []
     @pre_dictionary.each {|pair| scores << pair[1]}
@@ -80,7 +80,11 @@ helpers do
     q2 = scores[3*(scores.count/4).floor]
     q1 = scores[(scores.count/4).floor]
     iqr = q2-q1
-    Ohm.redis.zrevrangebyscore("ll_#{person_id}", "+inf", median + iqr*3, :withscores => withscores)
+    if word.nil?
+      Ohm.redis.zrevrangebyscore("ll_#{person_id}", "+inf", median + iqr*3, :withscores => withscores)
+    else
+      Ohm.redis.zrank("ll_#{person_id}", word)
+    end
   end
 
   def messages_that_include(person_id, word)
@@ -130,9 +134,9 @@ helpers do
 
   def graph
     sip_hash = {}
-    sips = get_sip_corpus
+    sips = get_sip_corpus(false)
     sips.each do |word|
-      sip_hash[word.join("+")] = who_has_sip(word.first)
+      sip_hash[word] = who_has_sip(word)
     end
 
     nodes = []
@@ -140,17 +144,16 @@ helpers do
     people_a = []
 
     sip_hash.each do |word, people|
-      frequency = word.split("+").last.to_i
-      word = word.split("+").first
-      if frequency > 1 and people.count > 2
+      if people.count > 2
         nodes << word
         people.each do |person|
-          if Person[person] then person = Person[person].name end
+          if Person[person] then person_id = person; person = Person[person].name end
           unless nodes.include? person 
             nodes << person
             people_a << person
           end
-          links << { "source" => nodes.index(word), "target" => nodes.index(person) }
+          frequency = sips_for(person_id, true, word)
+          links << { "source" => nodes.index(word), "target" => nodes.index(person), "distance" => 1 / frequency.to_f }
         end
       end
     end
