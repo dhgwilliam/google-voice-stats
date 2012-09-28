@@ -169,3 +169,7 @@ get '/graph' do
   graph
   haml :graph
 end
+
+get '/bundle' do
+  haml :bundle
+end
