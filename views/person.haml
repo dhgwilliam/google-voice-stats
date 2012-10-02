@@ -1,5 +1,7 @@
 #content.span6
-  %h1= Person[params[:person]].name
+  %h1
+    = Person[params[:person]].name
+    %a{:href => url("/person/#{params[:person]}/sips"), :class => "label label-success"} SIPs
   %br
   - unless @gchart.nil?
     %img{:src => @gchart}
