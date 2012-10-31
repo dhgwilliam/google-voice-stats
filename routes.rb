@@ -166,6 +166,10 @@ get '/sip/:keyword' do
 end
 
 get '/graph' do
-  # graph
+  haml :graph
+end
+
+get '/graph/refresh' do
+  graph
   haml :graph
 end
