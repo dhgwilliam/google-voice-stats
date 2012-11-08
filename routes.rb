@@ -171,5 +171,5 @@ end
 
 get '/graph/refresh' do
   graph
-  haml :graph
+  redirect url('/graph')
 end
