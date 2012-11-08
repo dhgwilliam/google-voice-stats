@@ -1,9 +1,10 @@
+$:.unshift('lib', 'models')
 require 'resque/tasks'
-require './lib/queues.rb'
+require 'queues.rb'
 require 'pandoc-ruby'
 require 'time'
 require 'ohm'
-require './models/person.rb'
+require 'person.rb'
 require 'digest/md5'
 
 desc "Import all messages from data/ folder"
