@@ -1,3 +1,9 @@
+#encoding: utf-8
+if RUBY_VERSION =~ /1.9/
+  Encoding.default_external = Encoding::UTF_8
+  Encoding.default_internal = Encoding::UTF_8
+end
+
 $:.unshift('lib', 'models')
 require 'resque/tasks'
 require 'queues.rb'
@@ -31,7 +37,7 @@ task :import do
     files.each_with_index do |file, i|
       putc "."
       if (i + 1) % 20 == 0 then puts i+1 end
-      o_file = File.open(File.join('.', 'data', file)).readlines.join
+      o_file = File.open(File.join('.', 'data', file)).readlines.join.encode!('UTF-8', 'UTF-8', :invalid => :replace)
       begin
         title = o_file.match(/\<title\>(.*?)<\/title\>/xm)[1].dump.gsub(/\\n/," ").gsub("Me to ", "").slice(1..-2).gsub("&quot;", "").gsub("'", "").gsub('"', "")
       rescue NoMethodError

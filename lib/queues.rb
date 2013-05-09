@@ -1,5 +1,6 @@
-require 'Ohm'
-require_relative '../models/person'
+$:.unshift('../models')
+require 'ohm'
+require 'person'
 
 Ohm.connect(:db => "15")
 
