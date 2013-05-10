@@ -44,7 +44,11 @@ task :import do
         title = "No name"
       end
       # puts "#{file} #{if title then title end }"
-      doc = PandocRuby.new(o_file, :from => :html, :to => :markdown).convert
+      begin
+        doc = PandocRuby.new(o_file, :from => :html, :to => :markdown).convert
+      rescue
+        next
+      end
 
       lines = []
       doc.split(/\n/).each {|line| lines << line }
