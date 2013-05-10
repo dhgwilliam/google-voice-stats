@@ -5,6 +5,7 @@
 0. This branch includes a Vagrantfile that should automatically configure a Debian 6.0.3/Squeeze box from scratch using Puppet
 0. Go to [google.com/takeout]() and dump your Google Voice data (including text messages, obviously). Once this is done, download, unzip and continue
 1. Navigate to the you@gmail.com-takeout/Voice/Calls folder and move all the .html files (or all files in Calls) to the `google-voice-stats/data` folder
+1. `vagrant up`
 1. `vagrant ssh`
 2. `sudo -s`
 2. `source ~/.profile`
@@ -23,6 +24,7 @@
 
 Loading the following URLs should intiate a set of processes that will fully
 populate your application. I will also simplify this in the future.
+
 1. [http://localhost:8080/dictionary/init]()
 2. [http://localhost:8080/dictionary/refreshall]()
 2. [http://localhost:8080/dictionary/refreshall/sips]()
