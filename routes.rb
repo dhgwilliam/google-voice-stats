@@ -4,27 +4,21 @@ require 'ohm'
 require 'gchart'
 
 get '/' do
-  @people = []
-  Person.all.each {|person| @people << person}
+  @people = Person.all_people
   @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :index
 end
 
 get '/people' do
-  response['Cache-Control'] = "public, max-age=" + (60).to_s
-  @people = []
-  Person.all.each {|person| @people << person}
+  # response['Cache-Control'] = "public, max-age=" + (60).to_s
+  @people = Person.all_people
   @people.sort_by! {|person| -Message.find(:sent_to_id => person.id).union(:sent_by_id => person.id).count}
   haml :people, :layout => false
 end
 
 get '/person/:person' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
-  @messages = []
-  Message.find(:sent_by_id => params[:person]).union(:sent_to_id => params[:person]).each do |message|
-    @messages << message
-  end
-  @messages.sort_by! {|message| message.date}
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  @messages = Message.with :contact => params[:person]
 
   @segments = person_by(Person[params[:person]], "week")
   @time_period = @segments[1]
@@ -35,7 +29,7 @@ get '/person/:person' do
 end
 
 get '/monthly' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(nil, "month")
   @time_period = @segments[1]
   @segments = @segments[0]
@@ -44,7 +38,7 @@ get '/monthly' do
 end
 
 get '/:person/monthly' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(Person[params[:person]], "month")
   @time_period = @segments[1]
   @segments = @segments[0]
@@ -53,7 +47,7 @@ get '/:person/monthly' do
 end
 
 get '/weekly' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(nil, "week")
   @time_period = @segments[1]
   @segments = @segments[0]
@@ -62,7 +56,7 @@ get '/weekly' do
 end
 
 get '/:person/weekly' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @segments = person_by(Person[params[:person]], "week")
   @time_period = @segments[1]
   @segments = @segments[0]
@@ -81,7 +75,7 @@ get '/dictionary/nuke' do
 end
 
 get '/dictionary/all' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @dictionary = Ohm.redis.zrevrange("dic_all", 0, 99, :withscores => true)
   haml :dictionary
 end
@@ -112,13 +106,13 @@ get '/person/:person_id/dictionary/refresh' do
 end
 
 get '/person/:person_id/dictionary' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @dictionary = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1, :withscores => true)
   haml :dictionary
 end
 
 get '/person/:person_id/sips' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   if Ohm.redis.zcard("ll_#{params[:person_id]}") == 0
     Ohm.redis.zadd("ll_#{params[:person_id]}", 0, "i")
     list = Ohm.redis.zrevrange("dic_#{params[:person_id]}", 0, -1)
@@ -130,7 +124,7 @@ get '/person/:person_id/sips' do
 end
 
 get '/keyword/:keyword' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @messages = []
   Message.all.each do |message|
     if message.content.downcase.include? params[:keyword].downcase then @messages << message end
@@ -139,7 +133,7 @@ get '/keyword/:keyword' do
 end
 
 get '/keyword/:keyword/with/:person_id' do
-  response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
+  # response['Cache-Control'] = "public, max-age=" + (60*60*24).to_s
   @messages = messages_that_include(params[:person_id], params[:keyword])
   haml :keyword
 end

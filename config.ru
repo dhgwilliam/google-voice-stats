@@ -8,12 +8,12 @@ require 'rack/cache'
 require 'resque'
 require 'queues'
 
-use Rack::Cache,
-  :verbose     => true,
-  :metastore   => 'file:tmp/cache/rack/meta',
-  :entitystore => 'file:tmp/cache/rack/body',
-  :allow_reload => true
+ConnectionWrapper.new
 
-Ohm.connect(:db => "15")
+# use Rack::Cache,
+#   :verbose     => true,
+#   :metastore   => 'file:tmp/cache/rack/meta',
+#   :entitystore => 'file:tmp/cache/rack/body',
+#   :allow_reload => true
 
 run Sinatra::Application
