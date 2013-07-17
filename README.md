@@ -1,5 +1,7 @@
 # google-voice-stats
 
+[![Code Climate](https://codeclimate.com/github/dhgwilliam/google-voice-stats.png)](https://codeclimate.com/github/dhgwilliam/google-voice-stats)
+
 ## Instructions
 
 0. This app has been developed and tested exclusively on Ruby 1.9.3
